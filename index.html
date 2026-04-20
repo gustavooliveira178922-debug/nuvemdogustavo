@@ -8,71 +8,23 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: white;
-}
-
-.center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
-}
-
-.card {
-    background: #111827;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    width: 320px;
-    text-align: center;
-}
-
-input, textarea {
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-}
-
-button {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #2563eb;
-    color: white;
-    font-weight: bold;
-}
-
-button:hover {
-    background: #1d4ed8;
-}
-
-#app {
-    display: none;
-    padding: 20px;
-}
-
-.topbar {
+    font-family: Arial;
     background: #0b1220;
+    color: white;
+}
+
+header {
     padding: 15px;
+    background: #111827;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
-.file-area {
-    margin-top: 20px;
+.container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 15px;
+    padding: 15px;
 }
 
 .box {
@@ -81,101 +33,116 @@ button:hover {
     border-radius: 10px;
 }
 
-.file-list {
-    max-height: 200px;
-    overflow-y: auto;
-    font-size: 14px;
+input, textarea, button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.file {
+    background: #1f2937;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+}
+
+#viewer {
+    margin-top: 10px;
+    max-height: 300px;
+    overflow: auto;
+}
+video {
+    width: 100%;
+}
+iframe {
+    width: 100%;
+    height: 300px;
+    border: none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div class="center" id="login">
-    <div class="card">
-        <h2>☁️ Nuvem do Gustavo</h2>
-        <p>Digite a senha</p>
-        <input type="password" id="senha" placeholder="Senha">
-        <button onclick="login()">Entrar</button>
+<header>
+    <div>☁️ Nuvem do Gustavo</div>
+    <div><button onclick="logout()">Sair</button></div>
+</header>
+
+<div class="container">
+
+    <!-- UPLOAD -->
+    <div class="box">
+        <h3>📤 Upload de arquivos</h3>
+
+        <!-- 🔥 BOTÃO DE UPLOAD REAL -->
+        <input type="file" id="upload" multiple>
+
+        <input type="text" id="name" placeholder="nome do arquivo">
+
+        <button onclick="save()">Salvar no sistema</button>
+
+        <div id="viewer"></div>
     </div>
-</div>
 
-<!-- APP -->
-<div id="app">
-
-    <div class="topbar">
-        <div>☁️ Nuvem do Gustavo</div>
-        <button onclick="logout()" style="width:auto;">Sair</button>
-    </div>
-
-    <div class="file-area">
-
-        <div class="box">
-            <h3>📁 Arquivos</h3>
-
-            <input type="text" id="filename" placeholder="nome do arquivo">
-
-            <textarea id="content" placeholder="escreva aqui..."></textarea>
-
-            <button onclick="saveFile()">Salvar</button>
-            <button onclick="downloadFile()">Baixar</button>
-        </div>
-
-        <div class="box">
-            <h3>📂 Meus arquivos</h3>
-            <div class="file-list" id="list"></div>
-            <button onclick="loadFiles()">Atualizar lista</button>
-        </div>
-
+    <!-- LISTA -->
+    <div class="box">
+        <h3>📂 Arquivos</h3>
+        <div id="list"></div>
     </div>
 
 </div>
 
 <script>
 
-const PASSWORD = "Gustavo23@"; // ⚠️ não é seguro de verdade
+let files = [];
 
-function login() {
-    const s = document.getElementById("senha").value;
+// 🔥 UPLOAD REAL
+document.getElementById("upload").addEventListener("change", function(e) {
+    files = Array.from(e.target.files);
+    alert(files.length + " arquivo(s) carregado(s)");
+});
 
-    if (s === PASSWORD) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        loadFiles();
-    } else {
-        alert("Senha incorreta!");
-    }
+// SALVAR
+function save() {
+    if (files.length === 0) return alert("Escolha arquivos primeiro");
+
+    files.forEach(file => {
+        const reader = new FileReader();
+
+        reader.onload = function(evt) {
+            localStorage.setItem("file_" + file.name, JSON.stringify({
+                name: file.name,
+                type: file.type,
+                data: evt.target.result
+            }));
+
+            load();
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    files = [];
 }
 
-function logout() {
-    location.reload();
-}
-
-function saveFile() {
-    const name = document.getElementById("filename").value;
-    const content = document.getElementById("content").value;
-
-    if (!name) return alert("Digite o nome do arquivo!");
-
-    localStorage.setItem("file_" + name, content);
-    alert("Arquivo salvo!");
-    loadFiles();
-}
-
-function downloadFile() {
-    const name = document.getElementById("filename").value || "arquivo.txt";
-    const content = document.getElementById("content").value;
-
-    const blob = new Blob([content], {type: "text/plain"});
-    const link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-    link.download = name;
-    link.click();
-}
-
-function loadFiles() {
+// LISTAR
+function load() {
     const list = document.getElementById("list");
     list.innerHTML = "";
 
@@ -183,21 +150,61 @@ function loadFiles() {
         const key = localStorage.key(i);
 
         if (key.startsWith("file_")) {
-            const name = key.replace("file_", "");
+            const file = JSON.parse(localStorage.getItem(key));
 
             const div = document.createElement("div");
-            div.innerHTML = "📄 " + name;
-            div.style.cursor = "pointer";
+            div.className = "file";
 
-            div.onclick = () => {
-                document.getElementById("filename").value = name;
-                document.getElementById("content").value = localStorage.getItem(key);
-            };
+            div.innerHTML = `
+                <span onclick="openFile('${key}')">📄 ${file.name}</span>
+                <button onclick="del('${key}')">🗑</button>
+            `;
 
             list.appendChild(div);
         }
     }
 }
+
+// ABRIR / PREVIEW INTELIGENTE
+function openFile(key) {
+    const file = JSON.parse(localStorage.getItem(key));
+    const viewer = document.getElementById("viewer");
+
+    viewer.innerHTML = "";
+
+    // 📄 PDF
+    if (file.type === "application/pdf") {
+        viewer.innerHTML = `<iframe src="${file.data}"></iframe>`;
+    }
+
+    // 🎥 vídeo
+    else if (file.type.startsWith("video/")) {
+        viewer.innerHTML = `
+            <video controls>
+                <source src="${file.data}">
+            </video>
+        `;
+    }
+
+    // 📝 texto / json / outros
+    else {
+        viewer.innerHTML = `<textarea style="width:100%;height:200px;">${atob(file.data.split(",")[1])}</textarea>`;
+    }
+}
+
+// DELETE
+function del(key) {
+    localStorage.removeItem(key);
+    load();
+}
+
+// LOGOUT
+function logout() {
+    location.reload();
+}
+
+// INIT
+load();
 
 </script>
 
