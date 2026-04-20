@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Nuvem do Gustavo</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    margin-top: 100px;
+}
+
+input, textarea {
+    padding: 10px;
+    margin: 10px;
+    width: 300px;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#app {
+    display: none;
+}
+
+textarea {
+    height: 200px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="login">
+    <h1>☁️ Nuvem do Gustavo</h1>
+    <p>Digite a senha para entrar</p>
+
+    <input type="password" id="senha" placeholder="Senha">
+    <br>
+    <button onclick="entrar()">Entrar</button>
+</div>
+
+<div id="app">
+    <h1>☁️ Nuvem do Gustavo</h1>
+
+    <p>Bem-vindo!</p>
+
+    <input type="text" id="filename" placeholder="nome do arquivo (ex: teste.txt)">
+    <br>
+
+    <textarea id="editor" placeholder="Escreva seu arquivo aqui..."></textarea>
+    <br>
+
+    <button onclick="salvar()">Salvar</button>
+    <button onclick="baixar()">Baixar arquivo</button>
+</div>
+
+<script>
+// 🔐 SENHA DEFINIDA AQUI
+const SENHA_CORRETA = "Gustavo23@";
+
+function entrar() {
+    const senhaDigitada = document.getElementById("senha").value;
+
+    // 🔎 verificação da senha
+    if (senhaDigitada === SENHA_CORRETA) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("app").style.display = "block";
+    } else {
+        alert("❌ Senha incorreta!");
+    }
+}
+
+// 💾 salvar no navegador
+function salvar() {
+    const nome = document.getElementById("filename").value;
+    const conteudo = document.getElementById("editor").value;
+
+    if (!nome) {
+        alert("Digite um nome de arquivo!");
+        return;
+    }
+
+    localStorage.setItem(nome, conteudo);
+    alert("Arquivo salvo localmente!");
+}
+
+// 📥 baixar arquivo
+function baixar() {
+    const nome = document.getElementById("filename").value || "arquivo.txt";
+    const conteudo = document.getElementById("editor").value;
+
+    const blob = new Blob([conteudo], { type: "text/plain" });
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+    link.download = nome;
+    link.click();
+}
+</script>
+
+</body>
+</html>
