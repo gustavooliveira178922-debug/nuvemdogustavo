@@ -2,109 +2,203 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nuvem do Gustavo</title>
 
 <style>
 body {
-    font-family: Arial;
-    background: #0f172a;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
     color: white;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.card {
+    background: #111827;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    width: 320px;
     text-align: center;
 }
 
-.container {
-    margin-top: 100px;
-}
-
 input, textarea {
+    width: 100%;
+    margin-top: 10px;
     padding: 10px;
-    margin: 10px;
-    width: 300px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
 }
 
 button {
-    padding: 10px 20px;
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #1d4ed8;
 }
 
 #app {
     display: none;
+    padding: 20px;
 }
 
-textarea {
-    height: 200px;
+.topbar {
+    background: #0b1220;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-area {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.box {
+    background: #111827;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.file-list {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container" id="login">
-    <h1>☁️ Nuvem do Gustavo</h1>
-    <p>Digite a senha para entrar</p>
-
-    <input type="password" id="senha" placeholder="Senha">
-    <br>
-    <button onclick="entrar()">Entrar</button>
+<!-- LOGIN -->
+<div class="center" id="login">
+    <div class="card">
+        <h2>☁️ Nuvem do Gustavo</h2>
+        <p>Digite a senha</p>
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+    </div>
 </div>
 
+<!-- APP -->
 <div id="app">
-    <h1>☁️ Nuvem do Gustavo</h1>
 
-    <p>Bem-vindo!</p>
+    <div class="topbar">
+        <div>☁️ Nuvem do Gustavo</div>
+        <button onclick="logout()" style="width:auto;">Sair</button>
+    </div>
 
-    <input type="text" id="filename" placeholder="nome do arquivo (ex: teste.txt)">
-    <br>
+    <div class="file-area">
 
-    <textarea id="editor" placeholder="Escreva seu arquivo aqui..."></textarea>
-    <br>
+        <div class="box">
+            <h3>📁 Arquivos</h3>
 
-    <button onclick="salvar()">Salvar</button>
-    <button onclick="baixar()">Baixar arquivo</button>
+            <input type="text" id="filename" placeholder="nome do arquivo">
+
+            <textarea id="content" placeholder="escreva aqui..."></textarea>
+
+            <button onclick="saveFile()">Salvar</button>
+            <button onclick="downloadFile()">Baixar</button>
+        </div>
+
+        <div class="box">
+            <h3>📂 Meus arquivos</h3>
+            <div class="file-list" id="list"></div>
+            <button onclick="loadFiles()">Atualizar lista</button>
+        </div>
+
+    </div>
+
 </div>
 
 <script>
-// 🔐 SENHA DEFINIDA AQUI
-const SENHA_CORRETA = "Gustavo23@";
 
-function entrar() {
-    const senhaDigitada = document.getElementById("senha").value;
+const PASSWORD = "Gustavo23@"; // ⚠️ não é seguro de verdade
 
-    // 🔎 verificação da senha
-    if (senhaDigitada === SENHA_CORRETA) {
+function login() {
+    const s = document.getElementById("senha").value;
+
+    if (s === PASSWORD) {
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "block";
+        loadFiles();
     } else {
-        alert("❌ Senha incorreta!");
+        alert("Senha incorreta!");
     }
 }
 
-// 💾 salvar no navegador
-function salvar() {
-    const nome = document.getElementById("filename").value;
-    const conteudo = document.getElementById("editor").value;
-
-    if (!nome) {
-        alert("Digite um nome de arquivo!");
-        return;
-    }
-
-    localStorage.setItem(nome, conteudo);
-    alert("Arquivo salvo localmente!");
+function logout() {
+    location.reload();
 }
 
-// 📥 baixar arquivo
-function baixar() {
-    const nome = document.getElementById("filename").value || "arquivo.txt";
-    const conteudo = document.getElementById("editor").value;
+function saveFile() {
+    const name = document.getElementById("filename").value;
+    const content = document.getElementById("content").value;
 
-    const blob = new Blob([conteudo], { type: "text/plain" });
+    if (!name) return alert("Digite o nome do arquivo!");
+
+    localStorage.setItem("file_" + name, content);
+    alert("Arquivo salvo!");
+    loadFiles();
+}
+
+function downloadFile() {
+    const name = document.getElementById("filename").value || "arquivo.txt";
+    const content = document.getElementById("content").value;
+
+    const blob = new Blob([content], {type: "text/plain"});
     const link = document.createElement("a");
 
     link.href = URL.createObjectURL(blob);
-    link.download = nome;
+    link.download = name;
     link.click();
 }
+
+function loadFiles() {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (key.startsWith("file_")) {
+            const name = key.replace("file_", "");
+
+            const div = document.createElement("div");
+            div.innerHTML = "📄 " + name;
+            div.style.cursor = "pointer";
+
+            div.onclick = () => {
+                document.getElementById("filename").value = name;
+                document.getElementById("content").value = localStorage.getItem(key);
+            };
+
+            list.appendChild(div);
+        }
+    }
+}
+
 </script>
 
 </body>
